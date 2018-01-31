@@ -1,0 +1,174 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://unpkg.com/draggabilly@2/dist/draggabilly.pkgd.min.js"></script>
+
+<style>
+    body {
+        line-height: 1;
+        margin: 20px;
+    }
+
+    * {
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        color: #000;
+    }
+
+    .window {
+        padding: 5px;
+        background: #ddd;
+        display: inline-block;
+        border-top: 2px solid #eee;
+        border-left: 2px solid #eee;
+        border-right: 2px solid #888;
+        border-bottom: 2px solid #888;
+    }
+
+    .header {
+        font-weight: bold;
+        width: 1026px;
+        background: #00a;
+        border-top: 2px solid #888;
+        border-left: 2px solid #888;
+        border-right: 2px solid #eee;
+        border-bottom: 2px solid #eee;
+        height: 30px;
+        line-height: 30px;
+        color: #fff;
+        padding-left: 8px;
+        font-face: sans-serif;
+        letter-spacing: 2px;
+    }
+
+    video {
+        max-width: 1024px;
+    }
+
+    .timeline {
+        width: 1024px;
+        background: #ddd;
+        border-top: 2px solid #888;
+        border-left: 2px solid #888;
+        border-right: 2px solid #eee;
+        border-bottom: 2px solid #eee;
+        height: 50px;
+        position: relative;
+    }
+
+    .start-scrubber,
+    .end-scrubber {
+        position: absolute;
+        top: 0;
+        height: 46px;
+        width: 20px;
+        background: #ccc;
+        border-top: 2px solid #eee;
+        border-left: 2px solid #eee;
+        border-right: 2px solid #888;
+        border-bottom: 2px solid #888;
+        z-index: 1;
+    }
+
+    .end-scrubber {
+        left: 1000;
+    }
+
+    .scrubber-body {
+        position: absolute;
+        top: 0;
+        width: 1000px;
+        left: 5px;
+        right: 500px;
+        height: 46px;
+        background: #eee;
+    }
+</style>
+
+<div class="window">
+    <div class="header">Video Cutter Pro</div>
+
+    <video id="video" preload="true" src="video.mp4"></video>
+
+    <div class="timeline">
+        <div class="cut">
+            <div class="start-scrubber scrubber"></div>
+            <div id="ScrubberBody" class="scrubber-body"></div>
+            <div class="end-scrubber scrubber"></div>
+        </div>
+    </div>
+</div>
+
+<div id="constrols">
+    <input id="current_time" value=""></span>
+    <br>
+    <input id="duration" value=""></span>
+    <br>
+    <input id="is_paused" value="true">
+    <button id="set">Set Time</button>
+
+</div>
+
+<script>
+    video.load()
+    // video.play()
+
+    function draw()
+    {
+        if (is_paused.value !== "true")
+        {
+            current_time.value = video.currentTime
+        }
+        duration.value = video.duration
+        requestAnimationFrame(draw)
+    }
+
+    requestAnimationFrame(draw)
+
+
+    set.onclick = function()
+    {
+        video.currentTime = current_time.value
+    }
+
+
+    function startSbr()
+    {
+        var start = $('.start-scrubber').data('draggabilly')
+        var end = $('.end-scrubber').data('draggabilly')
+        // console.log(start.position.x, start.position.y);
+        video.currentTime = ((video.duration * 1000) * (start.position.x /
+            1000)) / 10000
+        ScrubberBody.style.left = start.position.x
+        ScrubberBody.style.width = end.position.x - start.position.x
+    }
+
+    function endSbr()
+    {
+        var start = $('.start-scrubber').data('draggabilly')
+        var end = $('.end-scrubber').data('draggabilly')
+        console.log(end.position.x, end.position.y);
+        video.currentTime = ((video.duration * 1000) * (end.position.x /
+            1000)) / 10000
+        ScrubberBody.style.width = end.position.x - start.position.x
+    }
+
+    var $startSbr = $('.start-scrubber').draggabilly(
+    {
+        grid: [10, 1],
+        axis: 'x',
+        containment: '.timeline'
+    })
+    $startSbr.on('dragMove', startSbr)
+
+    var $endSbr = $('.end-scrubber').draggabilly(
+    {
+        grid: [10, 1],
+        axis: 'x',
+        containment: '.timeline'
+    })
+    $endSbr.on('dragMove', endSbr)
+</script>
