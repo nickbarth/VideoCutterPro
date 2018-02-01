@@ -1,174 +1,416 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://unpkg.com/draggabilly@2/dist/draggabilly.pkgd.min.js"></script>
+<!doctype html>
+<html>
 
-<style>
-    body {
-        line-height: 1;
-        margin: 20px;
-    }
+<head>
+    <title>Video Cutter Pro</title>
 
-    * {
-        border: 0;
-        font-size: 100%;
-        font: inherit;
-        vertical-align: baseline;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        color: #000;
-    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/draggabilly@2/dist/draggabilly.pkgd.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
 
-    .window {
-        padding: 5px;
-        background: #ddd;
-        display: inline-block;
-        border-top: 2px solid #eee;
-        border-left: 2px solid #eee;
-        border-right: 2px solid #888;
-        border-bottom: 2px solid #888;
-    }
+<body>
+    <style>
+        body {
+            line-height: 1;
+            margin: 20px;
+            background: #008183;
+            text-align: center;
+        }
 
-    .header {
-        font-weight: bold;
-        width: 1026px;
-        background: #00a;
-        border-top: 2px solid #888;
-        border-left: 2px solid #888;
-        border-right: 2px solid #eee;
-        border-bottom: 2px solid #eee;
-        height: 30px;
-        line-height: 30px;
-        color: #fff;
-        padding-left: 8px;
-        font-face: sans-serif;
-        letter-spacing: 2px;
-    }
+        * {
+            border: 0;
+            outline: none;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            color: #000;
+        }
 
-    video {
-        max-width: 1024px;
-    }
+        .window {
+            padding: 3px 5px 5px;
+            background: #ddd;
+            display: inline-block;
+            border-top: 2px solid #eee;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #888;
+            border-bottom: 2px solid #888;
+            margin-bottom: 50px;
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+        }
 
-    .timeline {
-        width: 1024px;
-        background: #ddd;
-        border-top: 2px solid #888;
-        border-left: 2px solid #888;
-        border-right: 2px solid #eee;
-        border-bottom: 2px solid #eee;
-        height: 50px;
-        position: relative;
-    }
+        .header {
+            font-weight: 400;
+            width: 1014px;
+            background: #00a;
+            border-top: 2px solid #eee;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #888;
+            border-bottom: 2px solid #888;
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+            color: #fff;
+            padding-left: 8px;
+            font-family: sans-serif;
+            letter-spacing: 2px;
+            margin-bottom: 1px;
+        }
 
-    .start-scrubber,
-    .end-scrubber {
-        position: absolute;
-        top: 0;
-        height: 46px;
-        width: 20px;
-        background: #ccc;
-        border-top: 2px solid #eee;
-        border-left: 2px solid #eee;
-        border-right: 2px solid #888;
-        border-bottom: 2px solid #888;
-        z-index: 1;
-    }
+        video {
+            max-width: 1014px;
+            width: 100%;
+        }
 
-    .end-scrubber {
-        left: 1000;
-    }
+        .playline {
+            width: 1014px;
+            background: #ddd;
+            border-top: 2px solid #888;
+            border-left: 2px solid #888;
+            border-right: 2px solid #eee;
+            border-bottom: 2px solid #eee;
+            height: 15px;
+            position: relative;
+        }
 
-    .scrubber-body {
-        position: absolute;
-        top: 0;
-        width: 1000px;
-        left: 5px;
-        right: 500px;
-        height: 46px;
-        background: #eee;
-    }
-</style>
+        .timeline {
+            width: 1014px;
+            background: #ddd;
+            border-top: 2px solid #888;
+            border-left: 2px solid #888;
+            border-right: 2px solid #eee;
+            border-bottom: 2px solid #eee;
+            height: 25px;
+            position: relative;
+        }
 
-<div class="window">
-    <div class="header">Video Cutter Pro</div>
+        .start-scrubber,
+        .end-scrubber {
+            position: absolute;
+            top: 0;
+            height: 23px;
+            width: 10px;
+            background: #ccc;
+            border-top: 2px solid #eee;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #888;
+            border-bottom: 2px solid #888;
+            z-index: 1;
+            cursor: pointer;
+        }
 
-    <video id="video" preload="true" src="video.mp4"></video>
+        .start-scrubber:active,
+        .end-scrubber:active {
+            cursor: ew-resize;
+        }
 
-    <div class="timeline">
-        <div class="cut">
-            <div class="start-scrubber scrubber"></div>
-            <div id="ScrubberBody" class="scrubber-body"></div>
-            <div class="end-scrubber scrubber"></div>
+        .end-scrubber {
+            left: 1000px;
+        }
+
+        .scrubber-body {
+            position: absolute;
+            top: 0;
+            width: 1000px;
+            left: 5px;
+            right: 500px;
+            height: 23px;
+            background: #eee;
+        }
+
+        .elapsed {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-top: 2px solid tranparent;
+            border-left: 2px solid tranparent;
+            border-right: 2px solid tranparent;
+            border-bottom: 2px solid tranparent;
+            width: 0px;
+            right: 500px;
+            height: 12px;
+            background: #aaa;
+        }
+
+        .elapsed-scrubber {
+            position: absolute;
+            top: 0;
+            left: 0px;
+            height: 12px;
+            width: 10px;
+            background: #ccc;
+            border-top: 2px solid #eee;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #888;
+            border-bottom: 2px solid #888;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        .elapsed-body {
+            position: absolute;
+            top: 0;
+            left: 0px;
+            width: 1010px;
+            right: 500px;
+            height: 23px;
+            background: #eee;
+            max-width: 1010px;
+        }
+
+        .controls {
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .controls input {
+            background: #fff;
+            font-size: 14px;
+            line-height: 14px;
+            height: 30px;
+            font-family: sans-serif;
+            width: 100px;
+            text-align: center;
+            border-top: 2px solid #888;
+            border-left: 2px solid #888;
+            border-right: 2px solid #eee;
+            border-bottom: 2px solid #eee;
+        }
+
+        .controls .spacer {
+            flex-grow: 1;
+        }
+
+        .controls input:last-child {
+            xext-align: right;
+        }
+
+        button {
+            padding: 10px;
+            line-height: 10px;
+            background: #ccc;
+            border-top: 2px solid #eee;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #888;
+            border-bottom: 2px solid #888;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        button[disabled] i {
+            color: #aaa;
+        }
+
+        button[disabled] {
+            border-top: 2px solid #888;
+            border-left: 2px solid #888;
+            border-right: 2px solid #eee;
+            border-bottom: 2px solid #eee;
+        }
+    </style>
+
+    <div class="window">
+        <div class="header">Video Cutter Pro</div>
+
+        <video id="video" preload="auto" loop="false" src="video.mp4"></video>
+
+        <div class="playline">
+            <div id="Elapsed" class="elapsed-scrubber"></div>
+            <div id="ElapsedBody" class="elapsed-body">
+                <div class="elapsed"></div>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <div class="cut">
+                <div id="StartScrubber" class="start-scrubber scrubber"></div>
+                <div id="ScrubberBody" class="scrubber-body"></div>
+                <div id="EndScrubber" class="end-scrubber scrubber"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input id="StartTime" type="text" value="0.000">
+            <div class="spacer"></div>
+            <button id="BackBtn"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+            <button id="PlayBtn"><i class="fa fa-play" aria-hidden="true"></i></button>
+            <button id="PauseBtn"><i class="fa fa-pause" aria-hidden="true"></i></button>
+            <button id="StopBtn"><i class="fa fa-stop" aria-hidden="true"></i></button>
+            <button id="CutBtn"><i class="fa fa-cut" aria-hidden="true"></i></button>
+            <button id="ForwardBtn"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+            <div class="spacer"></div>
+            <input id="EndTime" type="text" value="162.952">
         </div>
     </div>
-</div>
 
-<div id="constrols">
-    <input id="current_time" value=""></span>
     <br>
-    <input id="duration" value=""></span>
-    <br>
-    <input id="is_paused" value="true">
-    <button id="set">Set Time</button>
+    <input type="hidden" id="CurrentTime" value="">
+    <input type="hidden" id="Duration" value="">
 
-</div>
+    <script>
+        video.load()
 
-<script>
-    video.load()
-    // video.play()
-
-    function draw()
-    {
-        if (is_paused.value !== "true")
+        function draw()
         {
-            current_time.value = video.currentTime
+            CurrentTime.value = video.currentTime
+            Duration.value = video.duration
+
+            if (!Elapsed.style.left || parseInt(Elapsed.style.left, 10) <
+                parseInt(StartScrubber.style.left,
+                    10))
+            {
+                Elapsed.style.left = StartScrubber.style.left
+            }
+
+            if (parseInt(Elapsed.style.left, 10) > parseInt(EndScrubber.style
+                    .left,
+                    10))
+            {
+                Elapsed.style.left = EndScrubber.style.left
+            }
+
+            if (!video.paused)
+            {
+                pos = (video.currentTime / video.duration) * 1000
+                Elapsed.style.left = pos + "px"
+                // console.log(pos)
+                PlayBtn.disabled = true
+                PauseBtn.disabled = false
+            }
+            else
+            {
+                PlayBtn.disabled = false
+                PauseBtn.disabled = true
+            }
+
+            requestAnimationFrame(draw)
         }
-        duration.value = video.duration
         requestAnimationFrame(draw)
-    }
 
-    requestAnimationFrame(draw)
+        $('.elapsed-scrubber').draggabilly(
+        {
+            grid: [10, 1],
+            axis: 'x',
+            containment: '.playline'
+        }).on('dragMove', function()
+        {
+            video.pause()
+            var start = $('.start-scrubber').data('draggabilly')
+            var end = $('.end-scrubber').data('draggabilly')
+            // console.log(start.position.x, start.position.y);
+            video.currentTime = ((video.duration * 1000) * (start.position
+                .x /
+                1000)) / 1000
+            ScrubberBody.style.left = start.position.x
+            ScrubberBody.style.width = end.position.x - start.position
+                .x
+            StartTime.value = video.currentTime.toFixed(3)
+        })
 
+        $('.start-scrubber').draggabilly(
+        {
+            grid: [10, 1],
+            axis: 'x',
+            containment: '.timeline'
+        }).on('dragMove', function()
+        {
+            video.pause()
+            var start = $('.start-scrubber').data('draggabilly')
+            var end = $('.end-scrubber').data('draggabilly')
+            var current = $('.elapsed-scrubber').data('draggabilly')
 
-    set.onclick = function()
-    {
-        video.currentTime = current_time.value
-    }
+            // console.log(start.position.x, start.position.y);
 
+            video.currentTime = ((video.duration * 1000) * (start.position
+                .x /
+                1000)) / 1000
 
-    function startSbr()
-    {
-        var start = $('.start-scrubber').data('draggabilly')
-        var end = $('.end-scrubber').data('draggabilly')
-        // console.log(start.position.x, start.position.y);
-        video.currentTime = ((video.duration * 1000) * (start.position.x /
-            1000)) / 10000
-        ScrubberBody.style.left = start.position.x
-        ScrubberBody.style.width = end.position.x - start.position.x
-    }
+            ScrubberBody.style.left = start.position.x
+            ScrubberBody.style.width = end.position.x - start.position
+                .x
+            ElapsedBody.style.left = ScrubberBody.style.left
+            ElapsedBody.style.width = (end.position.x - start.position
+                .x +
+                10)
+            StartTime.value = video.currentTime.toFixed(3)
+        })
 
-    function endSbr()
-    {
-        var start = $('.start-scrubber').data('draggabilly')
-        var end = $('.end-scrubber').data('draggabilly')
-        console.log(end.position.x, end.position.y);
-        video.currentTime = ((video.duration * 1000) * (end.position.x /
-            1000)) / 10000
-        ScrubberBody.style.width = end.position.x - start.position.x
-    }
+        $('.end-scrubber').draggabilly(
+        {
+            grid: [10, 1],
+            axis: 'x',
+            containment: '.timeline'
+        }).on('dragMove', function()
+        {
+            video.pause()
+            var start = $('.start-scrubber').data('draggabilly')
+            var end = $('.end-scrubber').data('draggabilly')
+            var current = $('.elapsed-scrubber').data('draggabilly')
 
-    var $startSbr = $('.start-scrubber').draggabilly(
-    {
-        grid: [10, 1],
-        axis: 'x',
-        containment: '.timeline'
-    })
-    $startSbr.on('dragMove', startSbr)
+            // console.log(end.position.x, end.position.y);
+            video.currentTime = ((video.duration * 1000) * (end.position
+                .x /
+                1000)) / 1000
 
-    var $endSbr = $('.end-scrubber').draggabilly(
-    {
-        grid: [10, 1],
-        axis: 'x',
-        containment: '.timeline'
-    })
-    $endSbr.on('dragMove', endSbr)
-</script>
+            ScrubberBody.style.width = end.position.x - start.position
+                .x
+            ElapsedBody.style.width = (end.position.x - start.position
+                .x +
+                10)
+
+            EndTime.value = video.currentTime.toFixed(3)
+        })
+
+        PlayBtn.onclick = function()
+        {
+            video.play()
+        }
+
+        PauseBtn.onclick = function()
+        {
+            video.pause()
+        }
+
+        StopBtn.onclick = function()
+        {
+            video.pause()
+            var start = $('.start-scrubber').data('draggabilly')
+            Elapsed.style.left = ScrubberBody.style.left
+            video.currentTime = ((video.duration * 1000) * (start.position
+                .x /
+                1000)) / 1000
+        }
+
+        BackBtn.onclick = function()
+        {
+            var start = $('.start-scrubber').data('draggabilly')
+            Elapsed.style.left = ScrubberBody.style.left
+            video.currentTime = ((video.duration * 1000) * (start.position
+                .x /
+                1000)) / 1000
+        }
+
+        ForwardBtn.onclick = function()
+        {
+            var end = $('.end-scrubber').data('draggabilly')
+            Elapsed.style.left = EndScrubber.style.left
+            video.currentTime = ((video.duration * 1000) * (end.position.x /
+                1000)) / 1000
+        }
+
+        CutBtn.onclick = function()
+        {
+            alert(
+                `ffmpeg -i input.mp4 -ss ${StartTime.value} -to ${EndTime.value} -c copy output.mp4`
+            )
+        }
+    </script>
+</body>
+
+</html>
