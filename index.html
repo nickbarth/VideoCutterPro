@@ -4,9 +4,13 @@
 <head>
     <title>Video Cutter Pro</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/draggabilly@2/dist/draggabilly.pkgd.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-redux/5.0.6/react-redux.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -227,13 +231,7 @@
             </div>
         </div>
 
-        <div class="timeline">
-            <div class="cut">
-                <div id="StartScrubber" class="start-scrubber scrubber"></div>
-                <div id="ScrubberBody" class="scrubber-body"></div>
-                <div id="EndScrubber" class="end-scrubber scrubber"></div>
-            </div>
-        </div>
+        <div id="Timeline"></div>
 
         <div class="controls">
             <input id="StartTime" type="text" value="0.000">
@@ -245,7 +243,7 @@
             <button id="CutBtn"><i class="fa fa-cut" aria-hidden="true"></i></button>
             <button id="ForwardBtn"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
             <div class="spacer"></div>
-            <input id="EndTime" type="text" value="162.952">
+            <input id="EndTime" type="text" value="0.000">
         </div>
     </div>
 
@@ -253,163 +251,68 @@
     <input type="hidden" id="CurrentTime" value="">
     <input type="hidden" id="Duration" value="">
 
-    <script>
-        video.load()
+    <script type="text/babel">
+        const { Component } = React
+        const { connect } = ReactRedux
+        const { createStore } = Redux
 
-        function draw()
-        {
-            CurrentTime.value = video.currentTime
-            Duration.value = video.duration
+        const initialState = {
+            mouseX: 0,
+            mouseY: 0,
+            dragEl: null,
+        }
 
-            if (!Elapsed.style.left || parseInt(Elapsed.style.left, 10) <
-                parseInt(StartScrubber.style.left,
-                    10))
-            {
-                Elapsed.style.left = StartScrubber.style.left
+        const reducer = function(state=initialState, action) {
+            switch (action.type) {
+                case 'MOUSE_MOVE':
+                    return { ...state, mouseX: action.x, mouseY: action.x }
+                case 'DRAG_START':
+                    return { ...state, dragEl: action.element }
+                case 'DRAG_END':
+                    return { ...state }
+                default:
+                    return state
+            }
+        }
+
+        const store = createStore(reducer)
+        // store.subscribe(() => console.log("-", store.getState()))
+
+        document.onmousemove = function (event) {
+            const position = { x: event.clientX, y: event.clientY }
+            store.dispatch({ type: 'MOUSE_MOVE', ...position })
+        }
+
+        document.onmouseup = function (event) {
+            store.dispatch({ type: 'DRAG_END' })
+        }
+
+        class Timeline extends Component {
+
+            handleMouseDown(target) {
+                store.dispatch({ type: 'DRAG_START', element: target })
             }
 
-            if (parseInt(Elapsed.style.left, 10) > parseInt(EndScrubber.style
-                    .left,
-                    10))
-            {
-                Elapsed.style.left = EndScrubber.style.left
+            render() {
+                const { mouseX, mouseY } = this.props
+                const style = { left: mouseX }
+
+                return (
+                    <div className="timeline">
+                        <div class="cut">
+                            <div onMouseDown={e => this.handleMouseDown(e.target)} style={style} id="StartScrubber" className="start-scrubber scrubber"></div>
+                            <div id="ScrubberBody" className="scrubber-body"></div>
+                            <div id="EndScrubber" className="end-scrubber scrubber"></div>
+                        </div>
+                    </div>
+                )
             }
-
-            if (!video.paused)
-            {
-                pos = (video.currentTime / video.duration) * 1000
-                Elapsed.style.left = pos + "px"
-                // console.log(pos)
-                PlayBtn.disabled = true
-                PauseBtn.disabled = false
-            }
-            else
-            {
-                PlayBtn.disabled = false
-                PauseBtn.disabled = true
-            }
-
-            requestAnimationFrame(draw)
-        }
-        requestAnimationFrame(draw)
-
-        $('.elapsed-scrubber').draggabilly(
-        {
-            grid: [10, 1],
-            axis: 'x',
-            containment: '.playline'
-        }).on('dragMove', function()
-        {
-            video.pause()
-            var start = $('.start-scrubber').data('draggabilly')
-            var end = $('.end-scrubber').data('draggabilly')
-            // console.log(start.position.x, start.position.y);
-            video.currentTime = ((video.duration * 1000) * (start.position
-                .x /
-                1000)) / 1000
-            ScrubberBody.style.left = start.position.x
-            ScrubberBody.style.width = end.position.x - start.position
-                .x
-            StartTime.value = video.currentTime.toFixed(3)
-        })
-
-        $('.start-scrubber').draggabilly(
-        {
-            grid: [10, 1],
-            axis: 'x',
-            containment: '.timeline'
-        }).on('dragMove', function()
-        {
-            video.pause()
-            var start = $('.start-scrubber').data('draggabilly')
-            var end = $('.end-scrubber').data('draggabilly')
-            var current = $('.elapsed-scrubber').data('draggabilly')
-
-            // console.log(start.position.x, start.position.y);
-
-            video.currentTime = ((video.duration * 1000) * (start.position
-                .x /
-                1000)) / 1000
-
-            ScrubberBody.style.left = start.position.x
-            ScrubberBody.style.width = end.position.x - start.position
-                .x
-            ElapsedBody.style.left = ScrubberBody.style.left
-            ElapsedBody.style.width = (end.position.x - start.position
-                .x +
-                10)
-            StartTime.value = video.currentTime.toFixed(3)
-        })
-
-        $('.end-scrubber').draggabilly(
-        {
-            grid: [10, 1],
-            axis: 'x',
-            containment: '.timeline'
-        }).on('dragMove', function()
-        {
-            video.pause()
-            var start = $('.start-scrubber').data('draggabilly')
-            var end = $('.end-scrubber').data('draggabilly')
-            var current = $('.elapsed-scrubber').data('draggabilly')
-
-            // console.log(end.position.x, end.position.y);
-            video.currentTime = ((video.duration * 1000) * (end.position
-                .x /
-                1000)) / 1000
-
-            ScrubberBody.style.width = end.position.x - start.position
-                .x
-            ElapsedBody.style.width = (end.position.x - start.position
-                .x +
-                10)
-
-            EndTime.value = video.currentTime.toFixed(3)
-        })
-
-        PlayBtn.onclick = function()
-        {
-            video.play()
         }
 
-        PauseBtn.onclick = function()
-        {
-            video.pause()
-        }
+        const stateProps = (state) => ({ mouseX, mouseY })
+        connect(stateProps)(Timeline)
 
-        StopBtn.onclick = function()
-        {
-            video.pause()
-            var start = $('.start-scrubber').data('draggabilly')
-            Elapsed.style.left = ScrubberBody.style.left
-            video.currentTime = ((video.duration * 1000) * (start.position
-                .x /
-                1000)) / 1000
-        }
-
-        BackBtn.onclick = function()
-        {
-            var start = $('.start-scrubber').data('draggabilly')
-            Elapsed.style.left = ScrubberBody.style.left
-            video.currentTime = ((video.duration * 1000) * (start.position
-                .x /
-                1000)) / 1000
-        }
-
-        ForwardBtn.onclick = function()
-        {
-            var end = $('.end-scrubber').data('draggabilly')
-            Elapsed.style.left = EndScrubber.style.left
-            video.currentTime = ((video.duration * 1000) * (end.position.x /
-                1000)) / 1000
-        }
-
-        CutBtn.onclick = function()
-        {
-            alert(
-                `ffmpeg -i input.mp4 -ss ${StartTime.value} -to ${EndTime.value} -c copy output.mp4`
-            )
-        }
+        ReactDOM.render(<Timeline/>, document.getElementById('Timeline'))
     </script>
 </body>
 
